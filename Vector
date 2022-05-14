@@ -1,0 +1,87 @@
+#include <iostream>
+
+class Vector
+{
+private:
+    int lenght;
+    float *vect;
+
+public:
+    Vector(const int lenght_)
+    {
+        lenght = lenght_;
+        vect = new float[lenght]();
+    }
+
+    // copy constructor
+    Vector(const Vector& v){
+        lenght = v.lenght;
+        vect = new float[lenght];
+        for (int i = 0; i < lenght; i++){
+            vect[i] = v.vect[i];
+        }
+    }
+
+    ~Vector()
+    {
+        std::cout << "Vector destructor" << std::endl;
+        delete[] vect;
+    }
+
+    void Set(const int pos_, const int value_)
+    {
+        if (pos_ < 0 || pos_ >= lenght)
+        {
+            std::cerr << "Position not valid" << std::endl;
+            return;
+        }
+        vect[pos_] = value_;
+    }
+
+    float Get(const int pos_)
+    {
+        if (pos_ < 0 || pos_ >= lenght)
+        {
+            std::cerr << "Position not valid" << std::endl;
+            return -1;
+        }
+        return vect[pos_];
+    }
+
+    int GetLenght()
+    {
+        return lenght;
+    }
+
+    void Load()
+    {
+        std::cout << "Load vector" << std::endl;
+        float value;
+        for (int i = 0; i < GetLenght(); i++)
+        {
+            std::cout << "v[" << i << "] = ";
+            std::cin >> value;
+            Set(i, value);
+        }
+    }
+
+    void Print()
+    {
+        std::cout << "Printing vector" << std::endl;
+        for (int i = 0; i < GetLenght(); i++)
+        {
+            std::cout << "v[" << i << "] = " << Get(i) << std::endl;
+        }
+    }
+};
+
+int main()
+{
+    Vector v(5);
+    v.Load();
+    v.Print();
+    Vector v2(v);
+    v2.Print();
+
+    return 0;
+}
