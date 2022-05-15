@@ -1,0 +1,364 @@
+#include <iostream>
+
+class Matrix{
+    public:
+        typedef float Element;
+
+    private:
+        int rows = 0;
+        int cols = 0;
+        Element **mat = nullptr;
+        bool valid = false;
+
+
+        // if we have a piece of code that need repeating then we can write in a function
+        // and then we can call it again when needed
+        void Init(const int rows_, const int cols_){
+            // if the number of rows or cols of the matrix is negative or null
+            // then we cannot create a matrix
+            if (rows_ <= 0 || cols_ <= 0){
+                valid = false;
+                return;
+            }
+            rows = rows_;
+            cols = cols_;
+            mat = new Element* [rows]();
+            for (int i = 0; i < cols; i++){
+                mat[i] = new Element[cols]();
+            }
+            valid = true;
+        }
+
+    public:
+        // constructor
+        inline Matrix(const int rows_, const int cols_){
+            Init(rows_, cols_);
+            for (int i = 0; i < GetRows(); i++){
+                for (int j = 0; j < GetCols(); j++){
+                }
+            }
+        }
+
+        // copy constructor
+        Matrix(const Matrix& instance){
+            Init(instance.rows, instance.cols);
+
+            // copying element from the original matrix to the newly created 
+            for (int i = 0; i < rows; i++){
+                for (int j = 0; j < cols; j++){
+                    mat[i][j] = instance.mat[i][j];
+                }
+            }
+        }
+
+        // destructor
+        ~Matrix(){
+            // if nothing is allocated then there's no need
+            // to deallcoate the pointers
+            // if not done we have a segmentation fault
+            if (mat == nullptr){
+                return;
+            }
+            std::cout << "Destructor" << std::endl;
+            for (int i = 0; i < rows; i++){
+                delete[] mat[i];
+            }
+            delete[] mat;
+        }
+
+        // loading values inside the matrix
+        void Load(){
+            for (int i = 0; i < this->GetRows(); i++){
+                for (int j = 0; j < this->GetCols(); j++){
+                    Element value;
+                    std::cout << "("<< i <<")(" << j << ") = ";
+                    std::cin >> value;
+                    Set(i, j, value);
+                }
+            }
+        }
+
+        // printing the matrix
+        void Print() const {
+            std::cout << "Printing" << std::endl;
+            for (int i = 0; i < rows; i++){
+                for (int j = 0; j < cols; j++){
+                    std::cout << this -> Get(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+
+        // given row and column gives back the matrix's value
+        inline Element Get(const int row_, const int col_) const {
+            return mat[row_][col_];
+        }
+
+        // getter for the number of rows of the matrix
+        inline int GetRows() const{
+            return rows;
+        }
+
+        // getter for the number of columns of the matrix
+        inline int GetCols() const{
+            return cols;
+        }
+
+        // getter for the value of the matrix but safe from errors
+        inline bool GetSafe(const int row_, const int col_, Element* value) const {
+            if (row_ < rows && col_ < cols){
+                *value = Get(row_, col_);
+                return true;
+            }
+            return false;
+        }
+
+        // setter for a single value for the matrix
+        inline void Set(const int row, const int col, const Element value){
+            mat[row][col] = value;
+        }
+
+        // inline sum of matrixes with function
+        // bool because we need to control the dimensions of the second matrix
+        bool MySum(Matrix& matrix){
+            // controls if the matrixes are both valid
+            if(!valid || !matrix.valid){
+                return false;
+            }
+
+            // controls if adding the matrixes makes sense
+            // in terms of dimentions
+            if (rows == matrix.rows && cols == matrix.cols){
+                for (int i = 0; i < rows; i++){
+                    for (int j = 0; j < cols; j++){
+                        Set(i, j, Get(i, j) + matrix.Get(i, j));
+                        // mat[i][j] += matrix.mat[i][j];
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        // multiplying the matrix with a constant - professor constant
+        bool MyProd(const Element alpha){
+            if (!valid){
+                return false;
+            }
+            for (int i = 0; i < rows; i++){
+                for (int j = 0; j < cols; j++){
+                    Set(i, j, Get(i, j) * alpha);
+                    // mat[i][j] *= alpha;
+                }
+            }
+            return true;
+        }
+
+        // inline sum of matrixes with functions - professor version
+        bool Sum(const Matrix& matrix){
+            if (!valid || !matrix.valid || rows != matrix.rows || cols != matrix.cols){
+                return false;
+            }
+            for (int i = 0; i < rows; i++){
+                for (int j = 0; j < cols; j++){
+                    Set(i, j, Get(i, j) + matrix.Get(i, j));
+                }
+            }
+            return true;
+        }
+
+        // multiplying the matrix for a constant - professor version
+        void Prod(const Element alpha){
+            for (int i = 0; i < rows; i++){
+                for (int j = 0; j < cols; j++){
+                    Set(i, j, Get(i, j) * alpha);
+                }
+            }
+        }
+
+        // not in place sum of the matrixes - function
+        static Matrix SumNotInPlace(const Matrix& m1, const Matrix& m2){
+            if (!m1.valid || !m2.valid){
+                // sono modi equivalenti
+                return Matrix(0, 0);
+                //Matrix m(0, 0);
+                //return m;
+            }
+            if (m1.rows != m2.rows || m1.cols != m2.cols){
+                return Matrix(0, 0);
+            }
+
+            Matrix m3(m1.rows, m1.cols);
+
+            for (int i = 0; i < m3.rows; i++){
+                for (int j = 0; j < m3.cols; j++){
+                    m3.Set(i, j, m1.Get(i, j) + m2.Get(i, j));
+                }
+            }
+
+            return m3;
+        }
+
+        // sum not in place of matrixes with reference - function
+        /* static bool SumNotInPlace1(const Matrix& m1, const Matrix& m2, Matrix* res){
+            return true;
+        }*/
+
+        // getter for the validity of the matrix
+        inline bool GetValid() const {
+            return valid;
+        }   
+
+        // operation overloading - friend
+        friend Matrix& operator++(Matrix& matrix);
+        friend Matrix& operator--(Matrix& matrix);
+        friend Matrix operator+(const Matrix& left, const Matrix& right);
+        friend Matrix operator-(const Matrix& left, const Matrix& right); 
+        friend Matrix& operator+=(Matrix& left, const Matrix& right);
+        friend Matrix& operator*=(Matrix& left, const float alpha);
+        friend bool operator==(const Matrix& left, const Matrix& right);
+        friend Matrix operator*(const Matrix& left, const Matrix& right);
+};
+
+// operator overloading of '++'
+Matrix& operator++(Matrix& matrix){
+    for (int i = 0; i < matrix.rows; i++){
+        for (int j = 0; j < matrix.cols; j++){
+            matrix.Set(i, j, matrix.Get(i, j) + (Matrix::Element)1);
+        }
+    }
+    return matrix;
+}
+
+// operator overloading of '--'
+Matrix& operator--(Matrix& matrix){
+    for (int i = 0; i < matrix.rows; i++){
+        for (int j = 0; j < matrix.cols; j++){
+            matrix.Set(i, j, matrix.Get(i, j) - 1);
+        }
+    }
+    return matrix;
+}
+
+// operator overloading of '+'
+Matrix operator+(const Matrix& left, const Matrix& right){
+    if(left.GetRows() != right.GetRows() || left.GetCols() != right.GetCols()){
+        return Matrix(0, 0);
+    }
+    Matrix res(left.GetRows(), left.GetCols());
+
+    for (int i = 0; i < res.GetRows(); i++){
+        for (int j = 0; j < res.GetCols(); j++){
+            res.Set(i, j, left.Get(i, j) + right.Get(i, j));
+        }
+    }
+    return res;
+
+    // return Matrix::SumNotInPlace(left, right);
+}
+
+// operator overloading of '-'
+Matrix operator-(const Matrix& left, const Matrix& right){
+    if(left.GetRows() != right.GetRows() || left.GetCols() != right.GetCols()){
+        return Matrix(0, 0);
+    }
+    Matrix res(left.GetRows(), left.GetCols());
+
+    for (int i = 0; i < res.GetRows(); i++){
+        for (int j = 0; j < res.GetCols(); j++){
+            res.Set(i, j, left.Get(i, j) - right.Get(i, j));
+        }
+    }
+    return res;
+}
+
+// operator overloading of '+='
+Matrix& operator+=(Matrix& left, const Matrix& right){
+    if(!left.GetValid() || !right.GetValid() || left.GetRows() != right.GetRows() || left.GetCols() != right.GetCols()){
+        left.valid = false;
+        return left;
+    }
+
+    for (int i = 0; i < left.GetRows(); i++){
+        for (int j = 0; j < left.GetCols(); j++){
+            left.Set(i, j, left.Get(i, j) + right.Get(i, j));
+        }
+    }
+
+    return left;
+}
+
+// operator overloading of '*='
+Matrix& operator*=(Matrix& left, const Matrix::Element alpha){
+    if(!left.GetValid()){
+        left.valid = false;
+        return left;
+    }
+
+    for (int i = 0; i < left.GetRows(); i++){
+        for (int j = 0; j < left.GetCols(); j++){
+            left.Set(i, j, left.Get(i, j) * alpha);
+        }
+    }
+    return left;
+}
+
+// operator overloading of '*'
+Matrix operator*(const Matrix& left, const Matrix& right){
+    if(!left.GetValid() || !right.GetValid() || left.GetCols() != right.GetRows()){
+        std::cerr << "Either non valid matrix or wrong dimensions" << std::endl;
+        return Matrix(0, 0);
+    }
+
+    Matrix result(left.GetRows(), right.GetCols());
+
+    for (int i = 0; i < result.GetRows(); i++){
+        for (int j = 0; j < result.GetCols(); j++){
+            result.Set(i, j, 0);
+            Matrix::Element temp = 0;
+            // std::cout << "Initial temp: " << temp << std::endl;
+            for (int k = 0; k < left.GetCols(); k++){
+                temp += (left.Get(i, k) * right.Get(k, j));
+                // std::cout << "Current temp: " << temp << std::endl;
+            }
+            result.Set(i, j, temp);
+        }
+    }
+
+    return result;
+}
+
+// operator overloading of '=='
+bool operator==(const Matrix& left, const Matrix& right){
+    if(!left.GetValid() || !right.GetValid() || left.GetRows() != right.GetRows() || left.GetCols() != right.GetCols()){
+        std::cerr << "Comparing wrong size matrixes" << std::endl;
+        return false;
+    }
+
+    for (int i = 0; i < left.GetRows(); i++){
+        for (int j = 0; j < left.GetCols(); j++){
+            if (left.Get(i, j) != right.Get(i, j)){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+int main(){
+
+    Matrix m1(2, 2);
+    Matrix m2(2, 2);
+
+    m1.Load();
+    m2.Load();
+
+    m1.Print();
+    m2.Print();
+
+    Matrix m3 = m1 * m2;
+
+    m3.Print();
+
+    return 0;
+}
